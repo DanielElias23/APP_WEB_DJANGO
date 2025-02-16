@@ -29,7 +29,7 @@ from .models import Task
 def helloworld(request):
     
     if request.method == 'GET':
-        return render(request, 'pagina1.html', {
+        return render(request, 'suscribe.html', {
         'form': UserCreationForm
         })
         
@@ -44,13 +44,13 @@ def helloworld(request):
                 if user is not None:
                     # Loguear al usuario si las credenciales son correctas
                     login(request, user)
-                    return render(request, 'pagina1.html', {
+                    return render(request, 'suscribe.html', {
                         'form': UserCreationForm(),
                         'error': 'Inicio de sesión exitoso.'
                     })
                 else:
                     # Si la contraseña es incorrecta
-                    return render(request, 'pagina1.html', {
+                    return render(request, 'suscribe.html', {
                         'form': UserCreationForm(),
                         'error': 'Usuario ya existe, pero la contraseña es incorrecta.'
                     })
@@ -68,7 +68,7 @@ def helloworld(request):
                     ) 
                 user.save()
                 login(request, user)
-                return render(request, 'pagina1.html', {
+                return render(request, 'suscribe.html', {
                     'form': UserCreationForm(),
                     'error': 'Usuario creado exitosamente.'
                     }) 
@@ -90,7 +90,7 @@ def helloworld(request):
                        })
             """ 
         else:
-            return render(request, 'pagina1.html', {
+            return render(request, 'suscribe.html', {
                        'form': UserCreationForm,
                        'error': 'Password no coincide'
                        })

@@ -5,12 +5,12 @@
 
 {% block content%}
 
-
-<main class="container py-5">
+<body>
+  <main class="container py-5">
 
     <!div class"row">
       <!action es para indicar la ruta donde se guardan los formularios entregados>
-      <form action="/home/pagina1" method="POST" class="card card-body">
+      <form action="/home/suscribe" method="POST" class="card card-body">
         <h1>Registrate</h1>
         {{error}}
         <!Esto es token de django para validar el contacto con el servidor>
@@ -32,7 +32,8 @@
         </button>
       </form>
     <!/div>
-</main>
+  </main>
+</body>
 {% endblock %}
 
 </html>

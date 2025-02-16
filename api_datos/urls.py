@@ -37,6 +37,6 @@ urlpatterns = [
     #app creada
     path('', views.helloworld),
     #para que el envio de formulario se haga,
-    path('home/pagina1', views.helloworld),
+    path('home/suscribe', views.helloworld, name="suscribe"),
     path('home/logout/', views.logout1)
 ]
