@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Clientes</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Sidebar: Filtro fijo a la izquierda, con margen superior para no solaparse con el header de base.html */
+    .sidebar {
+      position: fixed;
+      top: 60px; /* Ajusta según el alto del header */
+      left: 0;
+      bottom: 0;
+      width: 300px;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    .sidebar.hidden {
+      transform: translateX(-100%);
+    }
+    /* Contenido principal a la derecha */
+    .main-content {
+      margin-left: 320px; /* ancho del sidebar + margen */
+      padding: 20px;
+      margin-top: 60px; /* para que no se solape con el header */
+      transition: margin-left 0.3s ease;
+    }
+    .main-content.full-width {
+      margin-left: 20px;
+    }
+    .form-container {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .table th, .table td {
+      padding: 12px;
+      text-align: center;
+    }
+    .editing {
+      background-color: #f0f8ff;
+    }
+    /* Tamaño uniforme para botones */
+    .btn-same-size {
+      width: 100px;
+    }
+    /* Botón para ocultar/mostrar el sidebar */
+    #toggle-sidebar {
+      position: fixed;
+      top: 70px; /* justo debajo del header */
+      left: 310px; /* posición inicial al lado del sidebar */
+      z-index: 1000;
+      transition: left 0.3s ease;
+    }
+    #toggle-sidebar.hidden {
+      left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Botón para alternar (toggle) la visibilidad del sidebar -->
+  <button id="toggle-sidebar" class="btn btn-primary btn-same-size">Ocultar</button>
+
+  <!-- Sidebar: Filtro de Búsqueda -->
+  <div class="sidebar" id="sidebar">
+    <h3>Buscar</h3>
+      <form method="get">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success btn-same-size">Filtrar</button> 
+            <a href="{% url 'customers_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
+        </div>
+        <!div class="mb-3">
+            <!label for="customer_id"><!/label>
+          <!input type="text" name="customer_id" id="customer_id" value="{{ request.GET.customer_id }}" placeholder="ID del Cliente" class="form-control">
+        <!/div>
+        <div class="mb-3">
+          <label for="first_name">Nombre del Cliente</label>
+          <input type="text" name="first_name" id="first_name" value="{{ request.GET.first_name }}" placeholder="Nombre del Cliente" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="last_name">Apellido del Cliente</label>
+            <input type="text" name="last_name" id="last_name" value="{{ request.GET.last_name }}" placeholder="Apellido del Cliente" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="phone">Telefono</label>
+            <input type="text" name="phone" id="phone" value="{{ request.GET.phone }}" placeholder="Telefono" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="email">Email</label>
+            <input type="text" name="email" id="email" value="{{ request.GET.email }}" placeholder="Email" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="street">Calle</label>
+            <input type="text" name="street" id="street" value="{{ request.GET.street }}" placeholder="Calle" class="form-control">
+        </div>
+        <div class="mb-3">
+            <label for="city">Ciudad</label>
+            <input type="text" name="city" id="city" value="{{ request.GET.city }}" placeholder="Ciudad" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label for="state">Estado</label>
+          <select name="state" id="state" class="form-control">
+            <option value="">Todos los Estados</option>
+            {% for status in state_statuses %}
+            <option value="{{ status }}" {% if request.GET.state == status %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="zip_code">Codigo</label>
+          <input type="text" name="zip_code" id="zip_code" value="{{ request.GET.zip_code }}" class="form-control">
+        </div>
+      </form>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content" id="main-content">
+    <h1>Gestión de Clientes</h1>
+    <!-- Botón para descargar CSV -->
+    <div class="mb-3">
+      <a href="{% url 'download_customers' %}" class="btn btn-info">Descargar CSV</a>
+    </div>
+    
+    <!-- Tabla de órdenes con edición inline y fila para agregar nuevos datos -->
+    <h3> Tabla de Clientes </h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID del Cliente</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Telefono</th>
+          <th>Email</th>
+          <th>Calle</th>
+          <th>Ciudad</th>
+          <th>Estado</th>
+          <th>Codigo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="orders-table-body">
+        {% for customer in Customers %}
+        <tr data-order-id="{{ customer.customer_id }}">
+          <td class="customer_id">{{ customer.customer_id }}</td>
+          <td class="first_name">{{ customer.first_name }}</td>
+          <td class="last_name">{{ customer.last_name }}</td>
+          <td class="phone">{{ customer.phone }}</td>
+          <td class="email">{{ customer.email }}</td>
+          <td class="street">{{ customer.street }}</td>
+          <td class="city">{{ customer.city }}</td>
+          <td class="state">{{ customer.state }}</td>
+          <td class="zip_code">{{ customer.zip_code }}</td>
+          <td>
+            <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-order-id="{{ customer.customer_id }}">Editar</button>
+            <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-order-id="{{ customer.customer_id }}" style="display:none;">Guardar</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-order-id="{{ customer.customer_id }}" style="display:none;">Cancelar</button>
+            <a href="?delete={{ customer.customer_id }}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10">No hay órdenes disponibles.</td>
+        </tr>
+        {% endfor %}
+        <!-- Fila para agregar nueva orden -->
+        <tr id="new-order-row">
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID del Cliente"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Nombre del Cliente"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Apellido del Cliente"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Telefono"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Email"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Calle"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Ciudad"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input"></td>
+          <td><button type="button" class="btn btn-success btn-sm btn-same-size" id="new-save-btn">Guardar</button></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- Gráfico resumen -->
+    <h2>Resumen de Clientes por Estado de EEUU</h2>
+    <canvas id="orderChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Funciones para edición inline de filas existentes
+      function editRowHandler() {
+        const orderId = this.getAttribute('data-order-id');
+        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+        row.querySelectorAll('td').forEach((cell, index) => {
+          if (index < 8) { // Las primeras 8 celdas son editables
+            const text = cell.textContent.trim();
+            cell.setAttribute('data-original', text);
+            cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
+          }
+        });
+        row.querySelector('.edit-btn').style.display = 'none';
+        row.querySelector('.save-btn').style.display = 'inline-block';
+        row.querySelector('.cancel-btn').style.display = 'inline-block';
+        row.classList.add('editing');
+      }
+
+      function cancelEditHandler() {
+        const orderId = this.getAttribute('data-order-id');
+        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+        row.querySelectorAll('td').forEach((cell, index) => {
+          if (index < 8) {
+            const original = cell.getAttribute('data-original');
+            cell.innerHTML = original;
+          }
+        });
+        row.querySelector('.edit-btn').style.display = 'inline-block';
+        row.querySelector('.save-btn').style.display = 'none';
+        row.querySelector('.cancel-btn').style.display = 'none';
+        row.classList.remove('editing');
+      }
+
+      function saveEditHandler() {
+        const orderId = this.getAttribute('data-order-id');
+        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+        const newData = [];
+        row.querySelectorAll('td').forEach((cell, index) => {
+          if (index < 8) {
+            const input = cell.querySelector('input');
+            newData.push(input.value);
+            cell.innerHTML = input.value;
+          }
+        });
+        console.log('Guardando datos para la orden', orderId, newData);
+        row.querySelector('.edit-btn').style.display = 'inline-block';
+        row.querySelector('.save-btn').style.display = 'none';
+        row.querySelector('.cancel-btn').style.display = 'none';
+        row.classList.remove('editing');
+      }
+
+      // Adjuntar eventos a los botones de edición existentes
+      document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', editRowHandler);
+      });
+      document.querySelectorAll('.cancel-btn').forEach(button => {
+        button.addEventListener('click', cancelEditHandler);
+      });
+      document.querySelectorAll('.save-btn').forEach(button => {
+        button.addEventListener('click', saveEditHandler);
+      });
+
+      // Función para agregar una nueva orden
+      document.getElementById('new-save-btn').addEventListener('click', function() {
+        const newOrderRow = document.getElementById('new-order-row');
+        const inputs = newOrderRow.querySelectorAll('.new-order-input');
+        const values = [];
+        inputs.forEach(function(input) {
+          values.push(input.value.trim());
+        });
+        // Validación: se asume que el ID de Orden es obligatorio
+        if (values[0] === "") {
+          alert("El ID de Cliente es requerido.");
+          return;
+        }
+        // Crear una nueva fila con los datos ingresados
+        const tbody = document.getElementById('orders-table-body');
+        const newRow = document.createElement('tr');
+        newRow.setAttribute('data-order-id', values[0]);
+        for (let i = 0; i < 8; i++) {
+          const td = document.createElement('td');
+          td.textContent = values[i];
+          newRow.appendChild(td);
+        }
+        // Columna de acciones
+        const actionsTd = document.createElement('td');
+
+        // Botón Editar
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Editar';
+        editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
+        editBtn.setAttribute('data-order-id', values[0]);
+        editBtn.addEventListener('click', editRowHandler);
+        actionsTd.appendChild(editBtn);
+
+        // Botón Guardar
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Guardar';
+        saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
+        saveBtn.setAttribute('data-order-id', values[0]);
+        saveBtn.style.display = 'none';
+        saveBtn.addEventListener('click', saveEditHandler);
+        actionsTd.appendChild(saveBtn);
+
+        // Botón Cancelar
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancelar';
+        cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
+        cancelBtn.setAttribute('data-order-id', values[0]);
+        cancelBtn.style.display = 'none';
+        cancelBtn.addEventListener('click', cancelEditHandler);
+        actionsTd.appendChild(cancelBtn);
+
+        // Enlace para Eliminar
+        const deleteLink = document.createElement('a');
+        deleteLink.href = '?delete=' + values[0];
+        deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
+        deleteLink.textContent = 'Eliminar';
+        actionsTd.appendChild(deleteLink);
+
+        newRow.appendChild(actionsTd);
+        // Insertar la nueva fila antes de la fila "nueva orden"
+        tbody.insertBefore(newRow, newOrderRow);
+        
+        // Limpiar los inputs de la fila para agregar nuevos datos
+        inputs.forEach(function(input) {
+          input.value = '';
+        });
+        console.log("Nuevo registro agregado:", values);
+      });
+
+      // Función para alternar (toggle) la visibilidad del sidebar
+      document.getElementById('toggle-sidebar').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        if (sidebar.classList.contains('hidden')) {
+          sidebar.classList.remove('hidden');
+          mainContent.classList.remove('full-width');
+          this.textContent = 'Ocultar';
+          this.classList.remove('hidden');
+        } else {
+          sidebar.classList.add('hidden');
+          mainContent.classList.add('full-width');
+          this.textContent = 'Mostrar';
+          this.classList.add('hidden');
+        }
+      });
+
+      // Inicialización del gráfico de resumen
+      var ctx = document.getElementById('orderChart').getContext('2d');
+      var orderChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [{% for status in order_status_counts %}'{{ status.state }}',{% endfor %}],
+          datasets: [{
+            label: 'Número de Órdenes',
+            data: [{% for status in order_status_counts %}{{ status.count }},{% endfor %}],
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+{% endblock %}

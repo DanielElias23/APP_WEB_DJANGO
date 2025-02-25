@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<!Para extender en otras paginas>
+{% extends 'base.html' %}
+
+<!Entendera que todo lo que esta dentro ira en otras paginas>
+{% block content %}
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Animación de Título</title>
+</head>
+<body>
+   <main class="container py-5">
+      <section class="card card-body">
+         <h1 class="animated-title">Data Search</h1>
+      </section>
+   </main>
+</body>
+
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Imagen y Texto</title>
+<main class="container py-5">
+   <section class="card card-body">
+     <div class="container">
+       <div class="text-container">
+           <h1>Bienvenidos</h1>
+           <p>Nuestra plataforma es una solución integral diseñada para la gestión eficiente de datos, enfocándose en ofrecer una experiencia de usuario sencilla y directa. Hemos desarrollado una interfaz intuitiva que permite a los usuarios, independientemente de su nivel técnico, navegar y operar con facilidad sus datos.</p>
+       </div>
+     </div>
+   </section>
+</main>
+{% endblock %}
+</html>

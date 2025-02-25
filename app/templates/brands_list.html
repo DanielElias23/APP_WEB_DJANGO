@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Marcas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* Sidebar: Filtro fijo a la izquierda */
+    .sidebar {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      bottom: 0;
+      width: 300px;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      padding: 20px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    .sidebar.hidden { transform: translateX(-100%); }
+    /* Contenido principal a la derecha */
+    .main-content {
+      margin-left: 320px;
+      padding: 20px;
+      margin-top: 60px;
+      transition: margin-left 0.3s ease;
+    }
+    .main-content.full-width { margin-left: 20px; }
+    .form-container {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .table th, .table td {
+      padding: 12px;
+      text-align: center;
+    }
+    .editing { background-color: #f0f8ff; }
+    .btn-same-size { width: 100px; }
+    /* Botón para ocultar/mostrar el sidebar */
+    #toggle-sidebar {
+      position: fixed;
+      top: 70px;
+      left: 310px;
+      z-index: 1000;
+      transition: left 0.3s ease;
+    }
+    #toggle-sidebar.hidden { left: 10px; }
+  </style>
+</head>
+<body>
+  <!-- Botón para alternar el sidebar -->
+  <button id="toggle-sidebar" class="btn btn-primary btn-same-size">Ocultar</button>
+
+  <!-- Sidebar: Filtro de Búsqueda -->
+  <div class="sidebar" id="sidebar">
+    <h3>Buscar</h3>
+    <form method="get">
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success btn-same-size">Filtrar</button> 
+        <a href="{% url 'brands_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
+      </div>
+      <div class="mb-3">
+        <label for="brand_id">ID de la Marca</label>
+        <input type="text" name="brand_id" id="brand_id" value="{{ request.GET.brand_id }}" placeholder="ID de la Marca" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="brand_name">Nombre de la Marca</label>
+        <input type="text" name="brand_name" id="brand_name" value="{{ request.GET.brand_name }}" placeholder="Nombre de la Marca" class="form-control">
+      </div>
+    </form>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="main-content" id="main-content">
+    <h1>Gestión de Marcas</h1>
+    <!-- Botón para descargar CSV -->
+    <div class="mb-3">
+      <a href="{% url 'download_brands' %}" class="btn btn-info">Descargar CSV</a>
+    </div>
+    
+    <h3>Tabla de Marcas</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID de la Marca</th>
+          <th>Nombre de la Marca</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="brands-table-body">
+        {% for brand in Brands %}
+        <tr data-brand-id="{{ brand.brand_id }}">
+          <td class="brand_id">{{ brand.brand_id }}</td>
+          <td class="brand_name">{{ brand.brand_name }}</td>
+          <td>
+            <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-brand-id="{{ brand.brand_id }}">Editar</button>
+            <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-brand-id="{{ brand.brand_id }}" style="display:none;">Guardar</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-brand-id="{{ brand.brand_id }}" style="display:none;">Cancelar</button>
+            <a href="?delete={{ brand.brand_id }}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="3">No hay órdenes disponibles.</td>
+        </tr>
+        {% endfor %}
+        <!-- Fila para agregar nueva marca -->
+        <tr id="new-brand-row">
+          <td><input type="text" class="form-control form-control-sm new-brand-input" placeholder="ID de la Marca"></td>
+          <td><input type="text" class="form-control form-control-sm new-brand-input" placeholder="Nombre de la Marca"></td>
+          <td><button type="button" class="btn btn-success btn-sm btn-same-size" id="new-save-btn">Guardar</button></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- Gráfico resumen -->
+    <h2>Resumen de Órdenes por Estado</h2>
+    <canvas id="orderChart" width="400" height="200"></canvas>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Funciones para edición inline de filas existentes
+      function editRowHandler() {
+        const brandId = this.getAttribute('data-brand-id');
+        const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
+        // Se asume que sólo las dos primeras celdas son editables (ID y Nombre)
+        row.querySelectorAll('td').forEach((cell, index) => {
+          if (index < 2) {
+            const text = cell.textContent.trim();
+            cell.setAttribute('data-original', text);
+            cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
+          }
+        });
+        row.querySelector('.edit-btn').style.display = 'none';
+        row.querySelector('.save-btn').style.display = 'inline-block';
+        row.querySelector('.cancel-btn').style.display = 'inline-block';
+        row.classList.add('editing');
+      }
+
+      function cancelEditHandler() {
+        const brandId = this.getAttribute('data-brand-id');
+        const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
+        row.querySelectorAll('td').forEach((cell, index) => {
+          if (index < 2) {
+            const original = cell.getAttribute('data-original');
+            cell.innerHTML = original;
+          }
+        });
+        row.querySelector('.edit-btn').style.display = 'inline-block';
+        row.querySelector('.save-btn').style.display = 'none';
+        row.querySelector('.cancel-btn').style.display = 'none';
+        row.classList.remove('editing');
+      }
+
+      function saveEditHandler() {
+        const brandId = this.getAttribute('data-brand-id');
+        const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
+        const newData = [];
+        row.querySelectorAll('td').forEach((cell, index) => {
+          if (index < 2) {
+            const input = cell.querySelector('input');
+            newData.push(input.value);
+            cell.innerHTML = input.value;
+          }
+        });
+        console.log('Guardando datos para la marca', brandId, newData);
+        // Aquí puedes realizar una petición AJAX para actualizar los datos en el servidor
+        row.querySelector('.edit-btn').style.display = 'inline-block';
+        row.querySelector('.save-btn').style.display = 'none';
+        row.querySelector('.cancel-btn').style.display = 'none';
+        row.classList.remove('editing');
+      }
+
+      // Adjuntar eventos a los botones de edición existentes
+      document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', editRowHandler);
+      });
+      document.querySelectorAll('.cancel-btn').forEach(button => {
+        button.addEventListener('click', cancelEditHandler);
+      });
+      document.querySelectorAll('.save-btn').forEach(button => {
+        button.addEventListener('click', saveEditHandler);
+      });
+
+      // Función para agregar una nueva marca
+      document.getElementById('new-save-btn').addEventListener('click', function() {
+        const newBrandRow = document.getElementById('new-brand-row');
+        const inputs = newBrandRow.querySelectorAll('.new-brand-input');
+        const values = [];
+        inputs.forEach(function(input) {
+          values.push(input.value.trim());
+        });
+        // Validación: se asume que el ID de la Marca es obligatorio
+        if (values[0] === "") {
+          alert("El ID de la Marca es requerido.");
+          return;
+        }
+        // Crear una nueva fila con los datos ingresados
+        const tbody = document.getElementById('brands-table-body');
+        // Definir la fila de nueva marca para insertar antes (la fila con id "new-brand-row")
+        const newOrderRow = document.getElementById('new-brand-row');
+        const newRow = document.createElement('tr');
+        newRow.setAttribute('data-brand-id', values[0]);
+        // Agregar las dos celdas: ID y Nombre
+        values.slice(0,2).forEach(value => {
+          const td = document.createElement('td');
+          td.textContent = value;
+          newRow.appendChild(td);
+        });
+        // Columna de acciones
+        const actionsTd = document.createElement('td');
+
+        // Botón Editar
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Editar';
+        editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
+        editBtn.setAttribute('data-brand-id', values[0]);
+        editBtn.addEventListener('click', editRowHandler);
+        actionsTd.appendChild(editBtn);
+
+        // Botón Guardar
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Guardar';
+        saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
+        saveBtn.setAttribute('data-brand-id', values[0]);
+        saveBtn.style.display = 'none';
+        saveBtn.addEventListener('click', saveEditHandler);
+        actionsTd.appendChild(saveBtn);
+
+        // Botón Cancelar
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancelar';
+        cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
+        cancelBtn.setAttribute('data-brand-id', values[0]);
+        cancelBtn.style.display = 'none';
+        cancelBtn.addEventListener('click', cancelEditHandler);
+        actionsTd.appendChild(cancelBtn);
+
+        // Enlace para Eliminar
+        const deleteLink = document.createElement('a');
+        deleteLink.href = '?delete=' + values[0];
+        deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
+        deleteLink.textContent = 'Eliminar';
+        actionsTd.appendChild(deleteLink);
+
+        newRow.appendChild(actionsTd);
+        // Insertar la nueva fila antes de la fila para agregar nuevas marcas
+        tbody.insertBefore(newRow, newOrderRow);
+        
+        // Limpiar los inputs de la fila para agregar nuevos datos
+        inputs.forEach(function(input) {
+          input.value = '';
+        });
+        console.log("Nueva marca agregada:", values);
+      });
+
+      // Función para alternar la visibilidad del sidebar
+      document.getElementById('toggle-sidebar').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        if (sidebar.classList.contains('hidden')) {
+          sidebar.classList.remove('hidden');
+          mainContent.classList.remove('full-width');
+          this.textContent = 'Ocultar';
+          this.classList.remove('hidden');
+        } else {
+          sidebar.classList.add('hidden');
+          mainContent.classList.add('full-width');
+          this.textContent = 'Mostrar';
+          this.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+{% endblock %}

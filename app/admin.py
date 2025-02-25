@@ -1,7 +1,5 @@
 from django.contrib import admin
-from .models import Task
+from .models import orders
 
-#Con modelos se refiere a las tablas creadas
-admin.site.register(Task)
-
+admin.site.register(orders)
 # Register your models here.

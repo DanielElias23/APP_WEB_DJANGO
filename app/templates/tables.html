@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<!Para extender en otras paginas>
+{% extends 'base.html' %}
+    
+<!Entendera que todo lo que esta dentro ira en otras paginas>
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuadros de Selección</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        .container3 {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        .box {
+            position: relative;
+            flex: 1 1 calc(33.333% - 40px);
+            max-width: 440px;
+            height: 150px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 10px;
+            text-decoration: none;
+            overflow: hidden;
+            transition: background-color 0.3s;
+        }
+        .box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: inherit;
+            background-size: cover;
+            background-position: center;
+            filter: blur(2px); /* Aplicar desenfoque */
+            z-index: 1;
+            transition: filter 0.3s;
+        }
+        .box:hover::before {
+            filter: blur(0px); /* Reducir desenfoque al pasar el ratón */
+        }
+        .box span {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<main class="container py-5">
+    <section class="card card-body">
+       <h1 class="animated-title">Lista de Tablas</h1>
+    </section>
+</main>
+<body>
+
+    <div class="container3">
+        <a href="/brands" class="box" style="background-image: url('https://motor.elpais.com/wp-content/uploads/2022/08/bicicleta-porsche_1-450x265.jpg');">
+            <span>Lista de Marcas</span>
+        </a>
+        <a href="/categories" class="box" style="background-image: url('https://img.redbull.com/images/c_limit,w_1500,h_1000/f_auto,q_auto/redbullcom/2019/03/14/c833772a-edde-4b25-bd00-0d7912ff512d/bike-bici-dirt-jump-yt-indsutries');">
+            <span>Categorías de Productos</span>
+        </a>
+        <a href="/customers" class="box" style="background-image: url('https://lh4.googleusercontent.com/1sCJiMOSRxYGbu6lsYD4y9-G-gSaQ3hckcI35ElV_7jUB1iVuwwP8Adau8U7ea4kRxkyhBgoSLrmw6KUK9MBLmKc_JJwvBQ0DFXkaiyTNB7D9lniM8A5wLyjj-BIm935v1K1gUOY');">
+            <span>Lista de Clientes</span>
+        </a>
+        <a href="/order_items" class="box" style="background-image: url('https://mbasistenciavirtual.com.ar/wp-content/uploads/2020/12/archivo_filing-scaled-e1607914116190.jpg');">
+            <span>Elementos de Ordenes</span>
+        </a>
+        <a href="/orders" class="box" style="background-image: url('https://nilo.app/wp-content/uploads/2024/10/como-saber-empresa-obligada-a-facturar-electronicamente-colombia.jpg');">
+            <span>Ordenes</span>
+        </a>
+        <a href="/products" class="box" style="background-image: url('https://montenbaik.com/wp-content/uploads/2024/07/104A1888-703x469.jpg');">
+            <span>Lista de Productos</span>
+        </a>
+        <a href="/staffs" class="box" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScCBtprGejQfzK7DdRswCmFBuS2D2ggzy0fg&s');">
+            <span>Empleados</span>
+        </a>
+        <a href="/stocks" class="box" style="background-image: url('https://soporte.mygestion.com/media/wp-content/uploads/gestion-almacen-2-700x420.jpg');">
+            <span>Stock de Productos</span>
+        </a>
+        <a href="/stores" class="box" style="background-image: url('https://assets.jumpseller.com/store/copenhague/themes/594901/options/113060357/optimizada-v-escritorio-slider-taller-3.webp?1701922624');">
+            <span>Lista de Tiendas</span>
+        </a>
+    </div>
+</body>
+{% endblock %}
+</html>
+
