@@ -10,10 +10,10 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Sidebar: Filtro fijo a la izquierda, con margen superior para no solaparse con el header de base.html */
+    /* Sidebar: Filtro fijo a la izquierda (con margen superior para el header) */
     .sidebar {
       position: fixed;
-      top: 60px; /* Ajusta según el alto del header */
+      top: 60px;
       left: 0;
       bottom: 0;
       width: 300px;
@@ -23,19 +23,15 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
       transition: transform 0.3s ease;
     }
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
+    .sidebar.hidden { transform: translateX(-100%); }
     /* Contenido principal a la derecha */
     .main-content {
-      margin-left: 320px; /* ancho del sidebar + margen */
+      margin-left: 320px;
       padding: 20px;
-      margin-top: 60px; /* para que no se solape con el header */
+      margin-top: 60px;
       transition: margin-left 0.3s ease;
     }
-    .main-content.full-width {
-      margin-left: 20px;
-    }
+    .main-content.full-width { margin-left: 20px; }
     .form-container {
       background: #f8f9fa;
       padding: 20px;
@@ -46,80 +42,73 @@
       padding: 12px;
       text-align: center;
     }
-    .editing {
-      background-color: #f0f8ff;
-    }
-    /* Tamaño uniforme para botones */
-    .btn-same-size {
-      width: 100px;
-    }
+    .editing { background-color: #f0f8ff; }
+    .btn-same-size { width: 100px; }
     /* Botón para ocultar/mostrar el sidebar */
     #toggle-sidebar {
       position: fixed;
-      top: 70px; /* justo debajo del header */
-      left: 310px; /* posición inicial al lado del sidebar */
+      top: 70px;
+      left: 310px;
       z-index: 1000;
       transition: left 0.3s ease;
     }
-    #toggle-sidebar.hidden {
-      left: 10px;
-    }
+    #toggle-sidebar.hidden { left: 10px; }
   </style>
 </head>
 <body>
-  <!-- Botón para alternar (toggle) la visibilidad del sidebar -->
+  <!-- Botón para alternar el sidebar -->
   <button id="toggle-sidebar" class="btn btn-primary btn-same-size">Ocultar</button>
 
   <!-- Sidebar: Filtro de Búsqueda -->
   <div class="sidebar" id="sidebar">
     <h3>Buscar</h3>
-      <form method="get">
-        <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success btn-same-size">Filtrar</button> 
-            <a href="{% url 'orders_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
-        </div>
-        <div class="mb-3">
-          <label for="order_id">ID de Orden</label>
-          <input type="text" name="order_id" id="order_id" value="{{ request.GET.order_id }}" placeholder="ID de Orden" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="customer_id">ID de Cliente</label>
-          <input type="text" name="customer_id" id="customer_id" value="{{ request.GET.customer_id }}" placeholder="ID de Cliente" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="order_status">Estado de Orden</label>
-          <select name="order_status" id="order_status" class="form-control">
-            <option value="">Todos los Estados</option>
-            {% for status in order_statuses %}
-            <option value="{{ status }}" {% if request.GET.order_status == status %}selected{% endif %}>{{ status }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="mb-3">
-          <label for="start_date">Fecha de Inicio</label>
-          <input type="date" name="start_date" id="start_date" value="{{ request.GET.start_date }}" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="end_date">Fecha de Fin</label>
-          <input type="date" name="end_date" id="end_date" value="{{ request.GET.end_date }}" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="required_date">Fecha del Requerimiento</label>
-          <input type="date" name="required_date" id="required_date" value="{{ request.GET.required_date }}" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="shipped_date">Fecha de Arribo</label>
-          <input type="date" name="shipped_date" id="shipped_date" value="{{ request.GET.shipped_date }}" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="store_id">ID de Tienda</label>
-          <input type="text" name="store_id" id="store_id" value="{{ request.GET.store_id }}" placeholder="ID de Tienda" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label for="staff_id">ID de Empleado</label>
-          <input type="text" name="staff_id" id="staff_id" value="{{ request.GET.staff_id }}" placeholder="ID de Empleado" class="form-control">
-        </div>
-      </form>
+    <form method="get">
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-success btn-same-size">Filtrar</button>
+        <a href="{% url 'orders_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
+      </div>
+      <div class="mb-3">
+        <label for="order_id">ID de Orden</label>
+        <input type="text" name="order_id" id="order_id" value="{{ request.GET.order_id }}" placeholder="ID de Orden" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="customer_id">ID de Cliente</label>
+        <input type="text" name="customer_id" id="customer_id" value="{{ request.GET.customer_id }}" placeholder="ID de Cliente" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="order_status">Estado de Orden</label>
+        <select name="order_status" id="order_status" class="form-control">
+          <option value="">Todos los Estados</option>
+          {% for status in order_statuses %}
+          <option value="{{ status }}" {% if request.GET.order_status == status %}selected{% endif %}>{{ status }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label for="start_date">Fecha de Inicio</label>
+        <input type="date" name="start_date" id="start_date" value="{{ request.GET.start_date }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="end_date">Fecha de Fin</label>
+        <input type="date" name="end_date" id="end_date" value="{{ request.GET.end_date }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="required_date">Fecha del Requerimiento</label>
+        <input type="date" name="required_date" id="required_date" value="{{ request.GET.required_date }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="shipped_date">Fecha de Arribo</label>
+        <input type="date" name="shipped_date" id="shipped_date" value="{{ request.GET.shipped_date }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="store_id">ID de Tienda</label>
+        <input type="text" name="store_id" id="store_id" value="{{ request.GET.store_id }}" placeholder="ID de Tienda" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="staff_id">ID de Empleado</label>
+        <input type="text" name="staff_id" id="staff_id" value="{{ request.GET.staff_id }}" placeholder="ID de Empleado" class="form-control">
+      </div>
+    </form>
   </div>
 
   <!-- Contenido principal -->
@@ -130,8 +119,8 @@
       <a href="{% url 'download_orders' %}" class="btn btn-info">Descargar CSV</a>
     </div>
     
-    <!-- Tabla de órdenes con edición inline y fila para agregar nuevos datos -->
-    <h3> Tabla de Órdenes </h3>
+    <!-- Tabla de Órdenes -->
+    <h3>Tabla de Órdenes</h3>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -179,7 +168,9 @@
           <td><input type="date" class="form-control form-control-sm new-order-input"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID de Tienda"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID de Empleado"></td>
-          <td><button type="button" class="btn btn-success btn-sm btn-same-size" id="new-save-btn">Guardar</button></td>
+          <td>
+            <button type="button" class="btn btn-success btn-sm btn-same-size" id="new-save-btn">Guardar</button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -191,12 +182,36 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Funciones para edición inline de filas existentes
+      // Función para obtener el token CSRF desde la cookie
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      // URLs para peticiones AJAX
+      const updateOrderUrl = "{% url 'orders_list' %}";
+      const createOrderUrl = "{% url 'create_order' %}";
+
+      // Función para activar la edición en línea
       function editRowHandler() {
         const orderId = this.getAttribute('data-order-id');
         const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) { // Las primeras 8 celdas son editables
+        // Campos a editar: order_id, customer_id, order_status, order_date, required_date, shipped_date, store_id, staff_id
+        const fields = ['order_id', 'customer_id', 'order_status', 'order_date', 'required_date', 'shipped_date', 'store_id', 'staff_id'];
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const text = cell.textContent.trim();
             cell.setAttribute('data-original', text);
             cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
@@ -208,11 +223,14 @@
         row.classList.add('editing');
       }
 
+      // Función para cancelar la edición y restaurar el contenido original
       function cancelEditHandler() {
         const orderId = this.getAttribute('data-order-id');
         const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) {
+        const fields = ['order_id', 'customer_id', 'order_status', 'order_date', 'required_date', 'shipped_date', 'store_id', 'staff_id'];
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const original = cell.getAttribute('data-original');
             cell.innerHTML = original;
           }
@@ -223,25 +241,54 @@
         row.classList.remove('editing');
       }
 
+      // Función para guardar la edición mediante AJAX
       function saveEditHandler() {
         const orderId = this.getAttribute('data-order-id');
         const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        const newData = [];
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) {
+        const fields = ['order_id', 'customer_id', 'order_status', 'order_date', 'required_date', 'shipped_date', 'store_id', 'staff_id'];
+        const formData = new FormData();
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const input = cell.querySelector('input');
-            newData.push(input.value);
-            cell.innerHTML = input.value;
+            formData.append(field, input.value.trim());
           }
         });
-        console.log('Guardando datos para la orden', orderId, newData);
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
+        
+        fetch(updateOrderUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            fields.forEach(field => {
+              const cell = row.querySelector(`.${field}`);
+              if (cell) {
+                const input = cell.querySelector('input');
+                cell.innerHTML = input.value.trim();
+              }
+            });
+            row.querySelector('.edit-btn').style.display = 'inline-block';
+            row.querySelector('.save-btn').style.display = 'none';
+            row.querySelector('.cancel-btn').style.display = 'none';
+            row.classList.remove('editing');
+            console.log("Orden actualizada correctamente.");
+          } else {
+            alert("Error al actualizar la orden: " + JSON.stringify(data.errors));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("Error de conexión al actualizar la orden.");
+        });
       }
 
-      // Adjuntar eventos a los botones de edición existentes
+      // Asignar eventos a los botones existentes
       document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', editRowHandler);
       });
@@ -252,76 +299,73 @@
         button.addEventListener('click', saveEditHandler);
       });
 
-      // Función para agregar una nueva orden
+      // Función para agregar una nueva orden mediante AJAX
       document.getElementById('new-save-btn').addEventListener('click', function() {
         const newOrderRow = document.getElementById('new-order-row');
         const inputs = newOrderRow.querySelectorAll('.new-order-input');
+        // Orden de campos: order_id, customer_id, order_status, order_date, required_date, shipped_date, store_id, staff_id
         const values = [];
-        inputs.forEach(function(input) {
-          values.push(input.value.trim());
-        });
-        // Validación: se asume que el ID de Orden es obligatorio
+        inputs.forEach(input => values.push(input.value.trim()));
         if (values[0] === "") {
           alert("El ID de Orden es requerido.");
           return;
         }
-        // Crear una nueva fila con los datos ingresados
-        const tbody = document.getElementById('orders-table-body');
-        const newRow = document.createElement('tr');
-        newRow.setAttribute('data-order-id', values[0]);
-        for (let i = 0; i < 8; i++) {
-          const td = document.createElement('td');
-          td.textContent = values[i];
-          newRow.appendChild(td);
-        }
-        // Columna de acciones
-        const actionsTd = document.createElement('td');
-
-        // Botón Editar
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Editar';
-        editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
-        editBtn.setAttribute('data-order-id', values[0]);
-        editBtn.addEventListener('click', editRowHandler);
-        actionsTd.appendChild(editBtn);
-
-        // Botón Guardar
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Guardar';
-        saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
-        saveBtn.setAttribute('data-order-id', values[0]);
-        saveBtn.style.display = 'none';
-        saveBtn.addEventListener('click', saveEditHandler);
-        actionsTd.appendChild(saveBtn);
-
-        // Botón Cancelar
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Cancelar';
-        cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
-        cancelBtn.setAttribute('data-order-id', values[0]);
-        cancelBtn.style.display = 'none';
-        cancelBtn.addEventListener('click', cancelEditHandler);
-        actionsTd.appendChild(cancelBtn);
-
-        // Enlace para Eliminar
-        const deleteLink = document.createElement('a');
-        deleteLink.href = '?delete=' + values[0];
-        deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
-        deleteLink.textContent = 'Eliminar';
-        actionsTd.appendChild(deleteLink);
-
-        newRow.appendChild(actionsTd);
-        // Insertar la nueva fila antes de la fila "nueva orden"
-        tbody.insertBefore(newRow, newOrderRow);
-        
-        // Limpiar los inputs de la fila para agregar nuevos datos
-        inputs.forEach(function(input) {
-          input.value = '';
+        const formData = new FormData();
+        const fields = ['order_id', 'customer_id', 'order_status', 'order_date', 'required_date', 'shipped_date', 'store_id', 'staff_id'];
+        fields.forEach((field, index) => {
+          formData.append(field, values[index]);
         });
-        console.log("Nuevo registro agregado:", values);
+        
+        fetch(createOrderUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const tbody = document.getElementById('orders-table-body');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-order-id', values[0]);
+            fields.forEach((field, index) => {
+              const td = document.createElement('td');
+              td.className = field;
+              td.textContent = values[index];
+              newRow.appendChild(td);
+            });
+            // Columna de acciones
+            const actionsTd = document.createElement('td');
+            actionsTd.innerHTML = `
+              <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-order-id="${values[0]}">Editar</button>
+              <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-order-id="${values[0]}" style="display:none;">Guardar</button>
+              <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-order-id="${values[0]}" style="display:none;">Cancelar</button>
+              <a href="?delete=${values[0]}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
+            `;
+            newRow.appendChild(actionsTd);
+            tbody.insertBefore(newRow, newOrderRow);
+            
+            // Asignar eventos a los botones de la nueva fila
+            newRow.querySelector('.edit-btn').addEventListener('click', editRowHandler);
+            newRow.querySelector('.cancel-btn').addEventListener('click', cancelEditHandler);
+            newRow.querySelector('.save-btn').addEventListener('click', saveEditHandler);
+            
+            // Limpiar los inputs de la fila nueva
+            inputs.forEach(input => input.value = '');
+            console.log("Nuevo registro agregado:", values);
+          } else {
+            alert("Error al crear la orden: " + JSON.stringify(data.errors));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("Error de conexión al crear la orden.");
+        });
       });
 
-      // Función para alternar (toggle) la visibilidad del sidebar
+      // Alternar visibilidad del sidebar
       document.getElementById('toggle-sidebar').addEventListener('click', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
@@ -338,7 +382,7 @@
         }
       });
 
-      // Inicialización del gráfico de resumen
+      // Inicializar gráfico con Chart.js
       var ctx = document.getElementById('orderChart').getContext('2d');
       var orderChart = new Chart(ctx, {
         type: 'bar',
@@ -352,17 +396,12 @@
             borderWidth: 1
           }]
         },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
+        options: { scales: { y: { beginAtZero: true } } }
       });
     });
   </script>
 </body>
 </html>
 {% endblock %}
+
 

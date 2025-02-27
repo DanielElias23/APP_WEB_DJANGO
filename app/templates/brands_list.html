@@ -10,7 +10,29 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    /* Sidebar: Filtro fijo a la izquierda */
+    /* Estilos personalizados */
+    .full-banner {
+      position: absolute;
+      top: 60px;
+      left: -10px;
+      width: 2150px;
+      height: 300px;
+      background-image: url('https://motor.elpais.com/wp-content/uploads/2022/08/bicicleta-porsche_1-450x265.jpg');
+      background-size: 1550px auto;
+      background-repeat: no-repeat;
+      background-position: center;
+      filter: blur(2px);
+      z-index: 0;
+    }
+    .full-banner .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 150%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+      z-index: 1;
+    }
     .sidebar {
       position: fixed;
       top: 60px;
@@ -24,7 +46,6 @@
       transition: transform 0.3s ease;
     }
     .sidebar.hidden { transform: translateX(-100%); }
-    /* Contenido principal a la derecha */
     .main-content {
       margin-left: 320px;
       padding: 20px;
@@ -32,30 +53,67 @@
       transition: margin-left 0.3s ease;
     }
     .main-content.full-width { margin-left: 20px; }
-    .form-container {
-      background: #f8f9fa;
+    .custom-card {
+      max-width: 600px;
+      margin: auto;
       padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
+      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
     }
-    .table th, .table td {
-      padding: 12px;
-      text-align: center;
-    }
-    .editing { background-color: #f0f8ff; }
     .btn-same-size { width: 100px; }
-    /* Botón para ocultar/mostrar el sidebar */
-    #toggle-sidebar {
-      position: fixed;
-      top: 70px;
-      left: 310px;
-      z-index: 1000;
-      transition: left 0.3s ease;
+    .table th, .table td { padding: 12px; text-align: center; }
+    .editing { background-color: #f0f8ff; }
+    .title-plastic {
+      font-family: 'Poppins', sans-serif;
+      font-size: 3rem;
+      font-weight: 1050;
+      text-transform: uppercase;
+      letter-spacing: 0px;
+      color: #333;
+      background: linear-gradient(145deg, #f8f9fa, #e0e0e0);
+      padding: 15px 30px;
+      border-radius: 12px;
+      box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+      display: inline-block;
+      margin-top: 0px;
+      transition: all 0.3s ease-in-out;
     }
-    #toggle-sidebar.hidden { left: 10px; }
+    .underline-plastic {
+      width: 100px;
+      height: 5px;
+      background: linear-gradient(to right, #0043ff, #007bff);
+      border: none;
+      border-radius: 5px;
+      margin: 8px auto 0;
+    }
+    .btn-plastic {
+      background: linear-gradient(145deg, #f8f9fa, #e0e0e0); /* Efecto brillante */
+      border: 2px solid #bdbdbd;
+      border-radius: 12px;
+      box-shadow: 3px 3px 8px #b0b0b0, -3px -3px 8px #ffffff; /* Sombra para efecto 3D */
+      color: #333;
+      font-weight: bold;
+      text-transform: uppercase;
+      transition: all 0.2s ease-in-out;
+      padding: 12px 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-plastic:active {
+      box-shadow: inset 3px 3px 6px #b0b0b0, inset -3px -3px 6px #ffffff;
+      transform: translateY(2px);
+    }
+  
+    /* Cambio de color al pasar el mouse */
+    .btn-plastic:hover {
+      background: linear-gradient(145deg, #e8e8e8, #d0d0d0);
+    }
   </style>
 </head>
 <body>
+  <div class="full-banner">
+    <div class="overlay"></div>
+  </div>
   <!-- Botón para alternar el sidebar -->
   <button id="toggle-sidebar" class="btn btn-primary btn-same-size">Ocultar</button>
 
@@ -79,14 +137,13 @@
   </div>
 
   <!-- Contenido principal -->
-  <div class="main-content" id="main-content">
-    <h1>Gestión de Marcas</h1>
-    <!-- Botón para descargar CSV -->
-    <div class="mb-3">
-      <a href="{% url 'download_brands' %}" class="btn btn-info">Descargar CSV</a>
-    </div>
-    
-    <h3>Tabla de Marcas</h3>
+  <div class="main-content text-center" id="main-content">
+    <main class="container py-5">
+      <section class="card card-body custom-card">
+        <h1 class="title-plastic animated-title">Marca del Fabricante</h1>
+        <hr class="underline-plastic">
+      </section>
+    </main>
     <table class="table table-striped">
       <thead>
         <tr>
@@ -121,166 +178,220 @@
       </tbody>
     </table>
     
-    <!-- Gráfico resumen -->
-    <h2>Resumen de Órdenes por Estado</h2>
+    <!-- Gráfico y descarga CSV -->
     <canvas id="orderChart" width="400" height="200"></canvas>
+    <div class="mb-3 text-center">
+      <a href="{% url 'download_brands' %}" class="btn btn-plastic btn-lg">
+        <i class="bi bi-download"></i> Descargar Tabla en CSV
+      </a>
+    </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Funciones para edición inline de filas existentes
-      function editRowHandler() {
-        const brandId = this.getAttribute('data-brand-id');
-        const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
-        // Se asume que sólo las dos primeras celdas son editables (ID y Nombre)
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 2) {
-            const text = cell.textContent.trim();
-            cell.setAttribute('data-original', text);
-            cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
+    // Función para obtener el token CSRF desde la cookie
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
           }
-        });
-        row.querySelector('.edit-btn').style.display = 'none';
-        row.querySelector('.save-btn').style.display = 'inline-block';
-        row.querySelector('.cancel-btn').style.display = 'inline-block';
-        row.classList.add('editing');
       }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-      function cancelEditHandler() {
-        const brandId = this.getAttribute('data-brand-id');
-        const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 2) {
-            const original = cell.getAttribute('data-original');
-            cell.innerHTML = original;
-          }
-        });
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
-      }
+    // Definición de URLs para las peticiones AJAX
+    const updateBrandUrl = "{% url 'brands_list' %}";
+    const createBrandUrl = "{% url 'create_brand' %}";
 
-      function saveEditHandler() {
-        const brandId = this.getAttribute('data-brand-id');
-        const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
-        const newData = [];
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 2) {
-            const input = cell.querySelector('input');
-            newData.push(input.value);
-            cell.innerHTML = input.value;
-          }
-        });
-        console.log('Guardando datos para la marca', brandId, newData);
-        // Aquí puedes realizar una petición AJAX para actualizar los datos en el servidor
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
-      }
-
-      // Adjuntar eventos a los botones de edición existentes
-      document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', editRowHandler);
-      });
-      document.querySelectorAll('.cancel-btn').forEach(button => {
-        button.addEventListener('click', cancelEditHandler);
-      });
-      document.querySelectorAll('.save-btn').forEach(button => {
-        button.addEventListener('click', saveEditHandler);
-      });
-
-      // Función para agregar una nueva marca
-      document.getElementById('new-save-btn').addEventListener('click', function() {
-        const newBrandRow = document.getElementById('new-brand-row');
-        const inputs = newBrandRow.querySelectorAll('.new-brand-input');
-        const values = [];
-        inputs.forEach(function(input) {
-          values.push(input.value.trim());
-        });
-        // Validación: se asume que el ID de la Marca es obligatorio
-        if (values[0] === "") {
-          alert("El ID de la Marca es requerido.");
-          return;
+    // Función para activar la edición en línea
+    function editRowHandler() {
+      const brandId = this.getAttribute('data-brand-id');
+      const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
+      row.querySelectorAll('td').forEach((cell, index) => {
+        if (index < 2) {
+          const text = cell.textContent.trim();
+          cell.setAttribute('data-original', text);
+          cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
         }
-        // Crear una nueva fila con los datos ingresados
-        const tbody = document.getElementById('brands-table-body');
-        // Definir la fila de nueva marca para insertar antes (la fila con id "new-brand-row")
-        const newOrderRow = document.getElementById('new-brand-row');
-        const newRow = document.createElement('tr');
-        newRow.setAttribute('data-brand-id', values[0]);
-        // Agregar las dos celdas: ID y Nombre
-        values.slice(0,2).forEach(value => {
-          const td = document.createElement('td');
-          td.textContent = value;
-          newRow.appendChild(td);
-        });
-        // Columna de acciones
-        const actionsTd = document.createElement('td');
-
-        // Botón Editar
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Editar';
-        editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
-        editBtn.setAttribute('data-brand-id', values[0]);
-        editBtn.addEventListener('click', editRowHandler);
-        actionsTd.appendChild(editBtn);
-
-        // Botón Guardar
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Guardar';
-        saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
-        saveBtn.setAttribute('data-brand-id', values[0]);
-        saveBtn.style.display = 'none';
-        saveBtn.addEventListener('click', saveEditHandler);
-        actionsTd.appendChild(saveBtn);
-
-        // Botón Cancelar
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Cancelar';
-        cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
-        cancelBtn.setAttribute('data-brand-id', values[0]);
-        cancelBtn.style.display = 'none';
-        cancelBtn.addEventListener('click', cancelEditHandler);
-        actionsTd.appendChild(cancelBtn);
-
-        // Enlace para Eliminar
-        const deleteLink = document.createElement('a');
-        deleteLink.href = '?delete=' + values[0];
-        deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
-        deleteLink.textContent = 'Eliminar';
-        actionsTd.appendChild(deleteLink);
-
-        newRow.appendChild(actionsTd);
-        // Insertar la nueva fila antes de la fila para agregar nuevas marcas
-        tbody.insertBefore(newRow, newOrderRow);
-        
-        // Limpiar los inputs de la fila para agregar nuevos datos
-        inputs.forEach(function(input) {
-          input.value = '';
-        });
-        console.log("Nueva marca agregada:", values);
       });
+      row.querySelector('.edit-btn').style.display = 'none';
+      row.querySelector('.save-btn').style.display = 'inline-block';
+      row.querySelector('.cancel-btn').style.display = 'inline-block';
+      row.classList.add('editing');
+    }
 
-      // Función para alternar la visibilidad del sidebar
-      document.getElementById('toggle-sidebar').addEventListener('click', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        if (sidebar.classList.contains('hidden')) {
-          sidebar.classList.remove('hidden');
-          mainContent.classList.remove('full-width');
-          this.textContent = 'Ocultar';
-          this.classList.remove('hidden');
+    // Función para cancelar la edición y restaurar valores originales
+    function cancelEditHandler() {
+      const brandId = this.getAttribute('data-brand-id');
+      const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
+      row.querySelectorAll('td').forEach((cell, index) => {
+        if (index < 2) {
+          const original = cell.getAttribute('data-original');
+          cell.innerHTML = original;
+        }
+      });
+      row.querySelector('.edit-btn').style.display = 'inline-block';
+      row.querySelector('.save-btn').style.display = 'none';
+      row.querySelector('.cancel-btn').style.display = 'none';
+      row.classList.remove('editing');
+    }
+
+    // Función para guardar la edición mediante AJAX
+    function saveEditHandler() {
+      const brandId = this.getAttribute('data-brand-id');
+      const row = document.querySelector(`tr[data-brand-id="${brandId}"]`);
+      const inputs = row.querySelectorAll('input');
+      const updatedBrandId = inputs[0].value.trim();
+      const updatedBrandName = inputs[1].value.trim();
+      const formData = new FormData();
+      formData.append('brand_id', updatedBrandId);
+      formData.append('brand_name', updatedBrandName);
+      
+      fetch(updateBrandUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          row.querySelectorAll('td')[0].innerHTML = updatedBrandId;
+          row.querySelectorAll('td')[1].innerHTML = updatedBrandName;
+          row.querySelector('.edit-btn').style.display = 'inline-block';
+          row.querySelector('.save-btn').style.display = 'none';
+          row.querySelector('.cancel-btn').style.display = 'none';
+          row.classList.remove('editing');
+          console.log("Marca actualizada correctamente.");
         } else {
-          sidebar.classList.add('hidden');
-          mainContent.classList.add('full-width');
-          this.textContent = 'Mostrar';
-          this.classList.add('hidden');
+          alert("Error al actualizar la marca: " + JSON.stringify(data.errors));
         }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Error de conexión al actualizar la marca.");
       });
+    }
+
+    // Función para crear una nueva marca mediante AJAX
+    document.getElementById('new-save-btn').addEventListener('click', function() {
+      const newBrandRow = document.getElementById('new-brand-row');
+      const inputs = newBrandRow.querySelectorAll('.new-brand-input');
+      const newBrandId = inputs[0].value.trim();
+      const newBrandName = inputs[1].value.trim();
+      if (newBrandId === "") {
+        alert("El ID de la Marca es requerido.");
+        return;
+      }
+      const formData = new FormData();
+      formData.append('brand_id', newBrandId);
+      formData.append('brand_name', newBrandName);
+      
+      fetch(createBrandUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const tbody = document.getElementById('brands-table-body');
+          const newRow = document.createElement('tr');
+          newRow.setAttribute('data-brand-id', newBrandId);
+          const cell1 = document.createElement('td');
+          cell1.textContent = newBrandId;
+          const cell2 = document.createElement('td');
+          cell2.textContent = newBrandName;
+          newRow.appendChild(cell1);
+          newRow.appendChild(cell2);
+          const cellActions = document.createElement('td');
+
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Editar';
+          editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
+          editBtn.setAttribute('data-brand-id', newBrandId);
+          editBtn.addEventListener('click', editRowHandler);
+          cellActions.appendChild(editBtn);
+
+          const saveBtn = document.createElement('button');
+          saveBtn.textContent = 'Guardar';
+          saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
+          saveBtn.setAttribute('data-brand-id', newBrandId);
+          saveBtn.style.display = 'none';
+          saveBtn.addEventListener('click', saveEditHandler);
+          cellActions.appendChild(saveBtn);
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.textContent = 'Cancelar';
+          cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
+          cancelBtn.setAttribute('data-brand-id', newBrandId);
+          cancelBtn.style.display = 'none';
+          cancelBtn.addEventListener('click', cancelEditHandler);
+          cellActions.appendChild(cancelBtn);
+
+          const deleteLink = document.createElement('a');
+          deleteLink.href = '?delete=' + newBrandId;
+          deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
+          deleteLink.textContent = 'Eliminar';
+          cellActions.appendChild(deleteLink);
+
+          newRow.appendChild(cellActions);
+          tbody.insertBefore(newRow, newBrandRow);
+          inputs.forEach(function(input) { input.value = ''; });
+          console.log("Nueva marca creada:", newBrandId, newBrandName);
+        } else {
+          alert("Error al crear la marca: " + JSON.stringify(data.errors));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Error de conexión al crear la marca.");
+      });
+    });
+
+    // Asignar los eventos a los botones existentes
+    document.querySelectorAll('.edit-btn').forEach(button => {
+      button.addEventListener('click', editRowHandler);
+    });
+    document.querySelectorAll('.cancel-btn').forEach(button => {
+      button.addEventListener('click', cancelEditHandler);
+    });
+    document.querySelectorAll('.save-btn').forEach(button => {
+      button.addEventListener('click', saveEditHandler);
+    });
+
+    // Función para alternar la visibilidad del sidebar
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      if (sidebar.classList.contains('hidden')) {
+        sidebar.classList.remove('hidden');
+        mainContent.classList.remove('full-width');
+        this.textContent = 'Ocultar';
+        this.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('hidden');
+        mainContent.classList.add('full-width');
+        this.textContent = 'Mostrar';
+        this.classList.add('hidden');
+      }
     });
   </script>
 </body>
 </html>
 {% endblock %}
+
+
+
+

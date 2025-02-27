@@ -23,25 +23,21 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
       transition: transform 0.3s ease;
     }
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
+    .sidebar.hidden { transform: translateX(-100%); }
     .main-content {
       margin-left: 320px;
       padding: 20px;
       margin-top: 60px;
       transition: margin-left 0.3s ease;
     }
-    .main-content.full-width {
-      margin-left: 20px;
-    }
+    .main-content.full-width { margin-left: 20px; }
     .form-container {
       background: #f8f9fa;
       padding: 20px;
       border-radius: 8px;
       margin-bottom: 20px;
     }
-    /* Tabla con distribución fija de columnas */
+    /* Tabla con distribución fija */
     .table {
       table-layout: fixed;
       width: 100%;
@@ -53,14 +49,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .editing {
-      background-color: #f0f8ff;
-    }
-    /* Botones: usar min-width para permitir flexibilidad */
-    .btn-same-size {
-      min-width: 100px;
-    }
-    /* Contenedor flexible para acciones */
+    .editing { background-color: #f0f8ff; }
+    .btn-same-size { min-width: 100px; }
     .action-buttons {
       display: flex;
       flex-wrap: wrap;
@@ -75,9 +65,7 @@
       z-index: 1000;
       transition: left 0.3s ease;
     }
-    #toggle-sidebar.hidden {
-      left: 10px;
-    }
+    #toggle-sidebar.hidden { left: 10px; }
   </style>
 </head>
 <body>
@@ -89,7 +77,7 @@
     <h3>Buscar</h3>
     <form method="get">
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success btn-same-size">Filtrar</button> 
+        <button type="submit" class="btn btn-success btn-same-size">Filtrar</button>
         <a href="{% url 'staffs_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
       </div>
       <div class="mb-3">
@@ -109,20 +97,20 @@
         <input type="text" name="email" id="email" value="{{ request.GET.email }}" placeholder="Email" class="form-control">
       </div>
       <div class="mb-3">
-        <label for="phone">Telefono</label>
-        <input type="text" name="phone" id="phone" value="{{ request.GET.phone }}" placeholder="Telefono" class="form-control">
+        <label for="phone">Teléfono</label>
+        <input type="text" name="phone" id="phone" value="{{ request.GET.phone }}" placeholder="Teléfono" class="form-control">
       </div>
       <div class="mb-3">
         <label for="active">Activo</label>
         <input type="text" name="active" id="active" value="{{ request.GET.active }}" placeholder="Activo" class="form-control">
       </div>
       <div class="mb-3">
-        <label for="manager_id">ID de Encargado</label>
-        <input type="text" name="manager_id" id="manager_id" value="{{ request.GET.manager_id }}" placeholder="ID de Encargado" class="form-control">
-      </div>
-      <div class="mb-3">
         <label for="store_id">ID de la Tienda</label>
         <input type="text" name="store_id" id="store_id" value="{{ request.GET.store_id }}" placeholder="ID de la Tienda" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="manager_id">ID de Encargado</label>
+        <input type="text" name="manager_id" id="manager_id" value="{{ request.GET.manager_id }}" placeholder="ID de Encargado" class="form-control">
       </div>
     </form>
   </div>
@@ -135,18 +123,18 @@
       <a href="{% url 'download_staffs' %}" class="btn btn-info">Descargar CSV</a>
     </div>
     
-    <!-- Tabla de órdenes -->
+    <!-- Tabla de Empleados -->
     <h3>Tabla de Empleados</h3>
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>ID de Empleado</th>
+          <th>ID del Empleado</th>
           <th>Nombre</th>
           <th>Apellido</th>
           <th>Email</th>
-          <th>Telefono</th>
+          <th>Teléfono</th>
           <th>Activo</th>
-          <th>ID de Tienda</th>
+          <th>ID de la Tienda</th>
           <th>ID de Encargado</th>
           <th>Acciones</th>
         </tr>
@@ -173,16 +161,16 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="9">No hay órdenes disponibles.</td>
+          <td colspan="9">No hay empleados disponibles.</td>
         </tr>
         {% endfor %}
-        <!-- Fila para agregar nueva orden -->
+        <!-- Fila para agregar nuevo empleado -->
         <tr id="new-order-row">
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID del Empleado"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Nombre"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Apellido"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Email"></td>
-          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Telefono"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Teléfono"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Activo"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID de la Tienda"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID de Encargado"></td>
@@ -193,19 +181,41 @@
       </tbody>
     </table>
     
-    <!-- Gráfico resumen -->
-    <h2>Cantidad de los Pedidos por Unidades</h2>
+    <!-- Gráfico resumen (por ejemplo, empleados agrupados por estado) -->
+    <h2>Resumen de Empleados por Activo</h2>
     <canvas id="orderChart" width="400" height="200"></canvas>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Función para editar una fila (solo las primeras 6 celdas)
+      // Función para obtener el token CSRF desde la cookie
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      const updateOrderUrl = "{% url 'staffs_list' %}";
+      const createOrderUrl = "{% url 'create_staffs' %}";
+
       function editRowHandler() {
         const orderId = this.getAttribute('data-order-id');
         const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) { // Solo celdas de datos, no la de acciones
+        // Campos a editar: staff_id, first_name, last_name, email, phone, active, store_id, manager_id
+        const fields = ['staff_id', 'first_name', 'last_name', 'email', 'phone', 'active', 'store_id', 'manager_id'];
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const text = cell.textContent.trim();
             cell.setAttribute('data-original', text);
             cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
@@ -217,12 +227,13 @@
         row.classList.add('editing');
       }
 
-      // Función para cancelar la edición y restaurar el contenido original
       function cancelEditHandler() {
         const orderId = this.getAttribute('data-order-id');
         const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) {
+        const fields = ['staff_id', 'first_name', 'last_name', 'email', 'phone', 'active', 'store_id', 'manager_id'];
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const original = cell.getAttribute('data-original');
             cell.innerHTML = original;
           }
@@ -233,26 +244,52 @@
         row.classList.remove('editing');
       }
 
-      // Función para guardar la edición
       function saveEditHandler() {
         const orderId = this.getAttribute('data-order-id');
         const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        const newData = [];
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) {
+        const fields = ['staff_id', 'first_name', 'last_name', 'email', 'phone', 'active', 'store_id', 'manager_id'];
+        const formData = new FormData();
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const input = cell.querySelector('input');
-            newData.push(input.value);
-            cell.innerHTML = input.value;
+            formData.append(field, input.value.trim());
           }
         });
-        console.log('Guardando datos para la orden', orderId, newData);
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
+        
+        fetch(updateOrderUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            fields.forEach(field => {
+              const cell = row.querySelector(`.${field}`);
+              if (cell) {
+                const input = cell.querySelector('input');
+                cell.innerHTML = input.value.trim();
+              }
+            });
+            row.querySelector('.edit-btn').style.display = 'inline-block';
+            row.querySelector('.save-btn').style.display = 'none';
+            row.querySelector('.cancel-btn').style.display = 'none';
+            row.classList.remove('editing');
+            console.log("Empleado actualizado correctamente.");
+          } else {
+            alert("Error al actualizar el empleado: " + JSON.stringify(data.errors));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("Error de conexión al actualizar el empleado.");
+        });
       }
 
-      // Asignar eventos a los botones existentes
       document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', editRowHandler);
       });
@@ -263,51 +300,69 @@
         button.addEventListener('click', saveEditHandler);
       });
 
-      // Función para agregar nueva orden
       document.getElementById('new-save-btn').addEventListener('click', function() {
         const newOrderRow = document.getElementById('new-order-row');
         const inputs = newOrderRow.querySelectorAll('.new-order-input');
         const values = [];
-        inputs.forEach(function(input) {
-          values.push(input.value.trim());
-        });
+        inputs.forEach(input => values.push(input.value.trim()));
         if (values[0] === "") {
-          alert("El ID de Orden es requerido.");
+          alert("El ID del Empleado es requerido.");
           return;
         }
-        const tbody = document.getElementById('orders-table-body');
-        const newRow = document.createElement('tr');
-        newRow.setAttribute('data-order-id', values[0]);
-        for (let i = 0; i < 8; i++) {
-          const td = document.createElement('td');
-          td.textContent = values[i];
-          newRow.appendChild(td);
-        }
-        const actionsTd = document.createElement('td');
-        actionsTd.innerHTML = `
-          <div class="action-buttons">
-            <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-order-id="${values[0]}">Editar</button>
-            <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-order-id="${values[0]}" style="display:none;">Guardar</button>
-            <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-order-id="${values[0]}" style="display:none;">Cancelar</button>
-            <a href="?delete=${values[0]}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
-          </div>
-        `;
-        newRow.appendChild(actionsTd);
-        tbody.insertBefore(newRow, newOrderRow);
-        
-        // Asignar eventos a los botones de la nueva fila
-        newRow.querySelector('.edit-btn').addEventListener('click', editRowHandler);
-        newRow.querySelector('.cancel-btn').addEventListener('click', cancelEditHandler);
-        newRow.querySelector('.save-btn').addEventListener('click', saveEditHandler);
-        
-        // Limpiar los inputs de la fila para agregar nuevos datos
-        inputs.forEach(function(input) {
-          input.value = '';
+        const formData = new FormData();
+        const fields = ['staff_id', 'first_name', 'last_name', 'email', 'phone', 'active', 'store_id', 'manager_id'];
+        fields.forEach((field, index) => {
+          formData.append(field, values[index]);
         });
-        console.log("Nuevo registro agregado:", values);
+        
+        fetch(createOrderUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            const tbody = document.getElementById('orders-table-body');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-order-id', values[0]);
+            fields.forEach((field, index) => {
+              const td = document.createElement('td');
+              td.className = field;
+              td.textContent = values[index];
+              newRow.appendChild(td);
+            });
+            const actionsTd = document.createElement('td');
+            actionsTd.innerHTML = `
+              <div class="action-buttons">
+                <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-order-id="${values[0]}">Editar</button>
+                <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-order-id="${values[0]}" style="display:none;">Guardar</button>
+                <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-order-id="${values[0]}" style="display:none;">Cancelar</button>
+                <a href="?delete=${values[0]}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
+              </div>
+            `;
+            newRow.appendChild(actionsTd);
+            tbody.insertBefore(newRow, newOrderRow);
+            
+            newRow.querySelector('.edit-btn').addEventListener('click', editRowHandler);
+            newRow.querySelector('.cancel-btn').addEventListener('click', cancelEditHandler);
+            newRow.querySelector('.save-btn').addEventListener('click', saveEditHandler);
+            
+            inputs.forEach(input => input.value = '');
+            console.log("Nuevo empleado agregado:", values);
+          } else {
+            alert("Error al crear el empleado: " + JSON.stringify(data.errors));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("Error de conexión al crear el empleado.");
+        });
       });
 
-      // Alternar visibilidad del sidebar
       document.getElementById('toggle-sidebar').addEventListener('click', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
@@ -324,25 +379,20 @@
         }
       });
 
-      // Inicialización del gráfico
       var ctx = document.getElementById('orderChart').getContext('2d');
       var orderChart = new Chart(ctx, {
         type: 'bar',
         data: {
           labels: [{% for status in order_status_counts %}'{{ status.active }}',{% endfor %}],
           datasets: [{
-            label: 'Número de Órdenes',
+            label: 'Número de Empleados',
             data: [{% for status in order_status_counts %}{{ status.count }},{% endfor %}],
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1
           }]
         },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
+        options: { scales: { y: { beginAtZero: true } } }
       });
     });
   </script>

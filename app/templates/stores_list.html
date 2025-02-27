@@ -23,25 +23,21 @@
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
       transition: transform 0.3s ease;
     }
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
+    .sidebar.hidden { transform: translateX(-100%); }
     .main-content {
       margin-left: 320px;
       padding: 20px;
       margin-top: 60px;
       transition: margin-left 0.3s ease;
     }
-    .main-content.full-width {
-      margin-left: 20px;
-    }
+    .main-content.full-width { margin-left: 20px; }
     .form-container {
       background: #f8f9fa;
       padding: 20px;
       border-radius: 8px;
       margin-bottom: 20px;
     }
-    /* Tabla con distribución fija de columnas */
+    /* Tabla con distribución fija */
     .table {
       table-layout: fixed;
       width: 100%;
@@ -53,14 +49,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .editing {
-      background-color: #f0f8ff;
-    }
-    /* Botones: usar min-width para permitir flexibilidad */
-    .btn-same-size {
-      min-width: 100px;
-    }
-    /* Contenedor flexible para acciones */
+    .editing { background-color: #f0f8ff; }
+    .btn-same-size { min-width: 100px; }
     .action-buttons {
       display: flex;
       flex-wrap: wrap;
@@ -75,9 +65,7 @@
       z-index: 1000;
       transition: left 0.3s ease;
     }
-    #toggle-sidebar.hidden {
-      left: 10px;
-    }
+    #toggle-sidebar.hidden { left: 10px; }
   </style>
 </head>
 <body>
@@ -89,7 +77,7 @@
     <h3>Buscar</h3>
     <form method="get">
       <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-success btn-same-size">Filtrar</button> 
+        <button type="submit" class="btn btn-success btn-same-size">Filtrar</button>
         <a href="{% url 'stores_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
       </div>
       <div class="mb-3">
@@ -101,8 +89,8 @@
         <input type="text" name="store_name" id="store_name" value="{{ request.GET.store_name }}" placeholder="Nombre" class="form-control">
       </div>
       <div class="mb-3">
-        <label for="phone">Telefono</label>
-        <input type="text" name="phone" id="phone" value="{{ request.GET.phone }}" placeholder="Telefono" class="form-control">
+        <label for="phone">Teléfono</label>
+        <input type="text" name="phone" id="phone" value="{{ request.GET.phone }}" placeholder="Teléfono" class="form-control">
       </div>
       <div class="mb-3">
         <label for="email">Email</label>
@@ -121,8 +109,8 @@
         <input type="text" name="state" id="state" value="{{ request.GET.state }}" placeholder="Estado" class="form-control">
       </div>
       <div class="mb-3">
-        <label for="zip_code">Codigo</label>
-        <input type="text" name="zip_code" id="zip_code" value="{{ request.GET.zip_code }}" placeholder="Codigo" class="form-control">
+        <label for="zip_code">Código Postal</label>
+        <input type="text" name="zip_code" id="zip_code" value="{{ request.GET.zip_code }}" placeholder="Código Postal" class="form-control">
       </div>
     </form>
   </div>
@@ -130,30 +118,29 @@
   <!-- Contenido principal -->
   <div class="main-content" id="main-content">
     <h1>Gestión de Tiendas</h1>
-    <!-- Botón para descargar CSV -->
     <div class="mb-3">
       <a href="{% url 'download_stores' %}" class="btn btn-info">Descargar CSV</a>
     </div>
     
-    <!-- Tabla de órdenes -->
     <h3>Tabla de Tiendas</h3>
     <table class="table table-striped">
       <thead>
         <tr>
           <th>ID de la Tienda</th>
           <th>Nombre</th>
-          <th>Telefono</th>
+          <th>Teléfono</th>
           <th>Email</th>
           <th>Calle</th>
           <th>Ciudad</th>
           <th>Estado</th>
-          <th>Codigo</th>
+          <th>Código Postal</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody id="orders-table-body">
         {% for store in Stores %}
-        <tr data-order-id="{{ store.store_id }}">
+        <!-- Se usa data-id con la clave primaria (pk) para identificar el registro de forma única -->
+        <tr data-id="{{ store.pk }}">
           <td class="store_id">{{ store.store_id }}</td>
           <td class="store_name">{{ store.store_name }}</td>
           <td class="phone">{{ store.phone }}</td>
@@ -164,28 +151,29 @@
           <td class="zip_code">{{ store.zip_code }}</td>
           <td>
             <div class="action-buttons">
-              <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-order-id="{{ store.store_id }}">Editar</button>
-              <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-order-id="{{ store.store_id }}" style="display:none;">Guardar</button>
-              <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-order-id="{{ store.store_id }}" style="display:none;">Cancelar</button>
-              <a href="?delete={{ store.store_id }}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
+              <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-id="{{ store.pk }}">Editar</button>
+              <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-id="{{ store.pk }}" style="display:none;">Guardar</button>
+              <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-id="{{ store.pk }}" style="display:none;">Cancelar</button>
+              <a href="?delete={{ store.pk }}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
             </div>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="9">No hay órdenes disponibles.</td>
+          <td colspan="9">No hay tiendas disponibles.</td>
         </tr>
         {% endfor %}
-        <!-- Fila para agregar nueva orden -->
+        <!-- Fila para agregar una nueva tienda -->
         <tr id="new-order-row">
+          <!-- Los datos se ingresan manualmente; al guardar se utilizará el valor ingresado para store_id -->
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="ID de la Tienda"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Nombre"></td>
-          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Telefono"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Teléfono"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Email"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Calle"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Ciudad"></td>
           <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Estado"></td>
-          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Codigo"></td>
+          <td><input type="text" class="form-control form-control-sm new-order-input" placeholder="Código Postal"></td>
           <td>
             <button type="button" class="btn btn-success btn-sm btn-same-size" id="new-save-btn">Guardar</button>
           </td>
@@ -193,19 +181,41 @@
       </tbody>
     </table>
     
-    <!-- Gráfico resumen -->
-    <h2>Cantidad de los Pedidos por Unidades</h2>
+    <h2>Resumen de Tiendas por Estado</h2>
     <canvas id="orderChart" width="400" height="200"></canvas>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Función para editar una fila (solo las primeras 6 celdas)
+      // Función para obtener el token CSRF
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken');
+
+      // Usaremos el atributo "data-id" (la pk) para identificar de forma única cada registro.
+      const updateOrderUrl = "{% url 'stores_list' %}";
+      const createOrderUrl = "{% url 'create_stores' %}";
+
       function editRowHandler() {
-        const orderId = this.getAttribute('data-order-id');
-        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) { // Solo celdas de datos, no la de acciones
+        const id = this.getAttribute('data-id');
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        // Campos a editar: store_id, store_name, phone, email, street, city, state, zip_code
+        const fields = ['store_id', 'store_name', 'phone', 'email', 'street', 'city', 'state', 'zip_code'];
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const text = cell.textContent.trim();
             cell.setAttribute('data-original', text);
             cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
@@ -217,12 +227,13 @@
         row.classList.add('editing');
       }
 
-      // Función para cancelar la edición y restaurar el contenido original
       function cancelEditHandler() {
-        const orderId = this.getAttribute('data-order-id');
-        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) {
+        const id = this.getAttribute('data-id');
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        const fields = ['store_id', 'store_name', 'phone', 'email', 'street', 'city', 'state', 'zip_code'];
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const original = cell.getAttribute('data-original');
             cell.innerHTML = original;
           }
@@ -233,26 +244,54 @@
         row.classList.remove('editing');
       }
 
-      // Función para guardar la edición
       function saveEditHandler() {
-        const orderId = this.getAttribute('data-order-id');
-        const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
-        const newData = [];
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 8) {
+        const id = this.getAttribute('data-id');
+        const row = document.querySelector(`tr[data-id="${id}"]`);
+        const fields = ['store_id', 'store_name', 'phone', 'email', 'street', 'city', 'state', 'zip_code'];
+        const formData = new FormData();
+        // Incluir la clave primaria para identificar el registro a actualizar
+        formData.append('id', id);
+        fields.forEach(field => {
+          const cell = row.querySelector(`.${field}`);
+          if (cell) {
             const input = cell.querySelector('input');
-            newData.push(input.value);
-            cell.innerHTML = input.value;
+            formData.append(field, input.value.trim());
           }
         });
-        console.log('Guardando datos para la orden', orderId, newData);
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
+        
+        fetch(updateOrderUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            fields.forEach(field => {
+              const cell = row.querySelector(`.${field}`);
+              if (cell) {
+                const input = cell.querySelector('input');
+                cell.innerHTML = input.value.trim();
+              }
+            });
+            row.querySelector('.edit-btn').style.display = 'inline-block';
+            row.querySelector('.save-btn').style.display = 'none';
+            row.querySelector('.cancel-btn').style.display = 'none';
+            row.classList.remove('editing');
+            console.log("Tienda actualizada correctamente.");
+          } else {
+            alert("Error al actualizar la tienda: " + JSON.stringify(data.errors));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("Error de conexión al actualizar la tienda.");
+        });
       }
 
-      // Asignar eventos a los botones existentes
       document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', editRowHandler);
       });
@@ -263,51 +302,72 @@
         button.addEventListener('click', saveEditHandler);
       });
 
-      // Función para agregar nueva orden
+      // Función para agregar un nuevo registro mediante AJAX
       document.getElementById('new-save-btn').addEventListener('click', function() {
         const newOrderRow = document.getElementById('new-order-row');
         const inputs = newOrderRow.querySelectorAll('.new-order-input');
         const values = [];
-        inputs.forEach(function(input) {
-          values.push(input.value.trim());
-        });
+        inputs.forEach(input => values.push(input.value.trim()));
         if (values[0] === "") {
-          alert("El ID de Orden es requerido.");
+          alert("El ID de la Tienda es requerido.");
           return;
         }
-        const tbody = document.getElementById('orders-table-body');
-        const newRow = document.createElement('tr');
-        newRow.setAttribute('data-order-id', values[0]);
-        for (let i = 0; i < 8; i++) {
-          const td = document.createElement('td');
-          td.textContent = values[i];
-          newRow.appendChild(td);
-        }
-        const actionsTd = document.createElement('td');
-        actionsTd.innerHTML = `
-          <div class="action-buttons">
-            <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-order-id="${values[0]}">Editar</button>
-            <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-order-id="${values[0]}" style="display:none;">Guardar</button>
-            <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-order-id="${values[0]}" style="display:none;">Cancelar</button>
-            <a href="?delete=${values[0]}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
-          </div>
-        `;
-        newRow.appendChild(actionsTd);
-        tbody.insertBefore(newRow, newOrderRow);
-        
-        // Asignar eventos a los botones de la nueva fila
-        newRow.querySelector('.edit-btn').addEventListener('click', editRowHandler);
-        newRow.querySelector('.cancel-btn').addEventListener('click', cancelEditHandler);
-        newRow.querySelector('.save-btn').addEventListener('click', saveEditHandler);
-        
-        // Limpiar los inputs de la fila para agregar nuevos datos
-        inputs.forEach(function(input) {
-          input.value = '';
+        const formData = new FormData();
+        const fields = ['store_id', 'store_name', 'phone', 'email', 'street', 'city', 'state', 'zip_code'];
+        fields.forEach((field, index) => {
+          formData.append(field, values[index]);
         });
-        console.log("Nuevo registro agregado:", values);
+        
+        fetch(createOrderUrl, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrftoken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            // Utilizamos el pk devuelto por el servidor para identificar de forma única el nuevo registro.
+            const newPk = data.pk;
+            const tbody = document.getElementById('orders-table-body');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-id', newPk);
+            fields.forEach((field, index) => {
+              const td = document.createElement('td');
+              td.className = field;
+              td.textContent = values[index];
+              newRow.appendChild(td);
+            });
+            const actionsTd = document.createElement('td');
+            actionsTd.innerHTML = `
+              <div class="action-buttons">
+                <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-id="${newPk}">Editar</button>
+                <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-id="${newPk}" style="display:none;">Guardar</button>
+                <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-id="${newPk}" style="display:none;">Cancelar</button>
+                <a href="?delete=${newPk}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
+              </div>
+            `;
+            newRow.appendChild(actionsTd);
+            tbody.insertBefore(newRow, newOrderRow);
+            
+            newRow.querySelector('.edit-btn').addEventListener('click', editRowHandler);
+            newRow.querySelector('.cancel-btn').addEventListener('click', cancelEditHandler);
+            newRow.querySelector('.save-btn').addEventListener('click', saveEditHandler);
+            
+            inputs.forEach(input => input.value = '');
+            console.log("Nuevo registro agregado:", values);
+          } else {
+            alert("Error al crear el registro: " + JSON.stringify(data.errors));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert("Error de conexión al crear el registro.");
+        });
       });
 
-      // Alternar visibilidad del sidebar
       document.getElementById('toggle-sidebar').addEventListener('click', function() {
         const sidebar = document.getElementById('sidebar');
         const mainContent = document.getElementById('main-content');
@@ -324,25 +384,20 @@
         }
       });
 
-      // Inicialización del gráfico
       var ctx = document.getElementById('orderChart').getContext('2d');
       var orderChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: [{% for status in order_status_counts %}'{{ status.state }}',{% endfor %}],
+          labels: [{% for status in order_status_counts %}'{{ status.quantity }}',{% endfor %}],
           datasets: [{
-            label: 'Número de Órdenes',
+            label: 'Número de Registros',
             data: [{% for status in order_status_counts %}{{ status.count }},{% endfor %}],
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             borderColor: 'rgba(54, 162, 235, 1)',
             borderWidth: 1
           }]
         },
-        options: {
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
+        options: { scales: { y: { beginAtZero: true } } }
       });
     });
   </script>

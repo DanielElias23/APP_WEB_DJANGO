@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestión de Categorias</title>
+  <title>Gestión de Categorías</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -68,219 +68,270 @@
         <a href="{% url 'categories_list' %}" class="btn btn-secondary btn-same-size">Limpiar</a>
       </div>
       <div class="mb-3">
-        <label for="category_id">ID de la Marca</label>
-        <input type="text" name="category_id" id="category_id" value="{{ request.GET.category_id }}" placeholder="ID de la Categoria" class="form-control">
+        <label for="category_id">ID de la Categoría</label>
+        <input type="text" name="category_id" id="category_id" value="{{ request.GET.category_id }}" placeholder="ID de la Categoría" class="form-control">
       </div>
       <div class="mb-3">
-        <label for="category_name">Nombre de la Categoria</label>
-        <input type="text" name="category_name" id="category_name" value="{{ request.GET.category_name }}" placeholder="Nombre de la Categoria" class="form-control">
+        <label for="category_name">Nombre de la Categoría</label>
+        <input type="text" name="category_name" id="category_name" value="{{ request.GET.category_name }}" placeholder="Nombre de la Categoría" class="form-control">
       </div>
     </form>
   </div>
 
   <!-- Contenido principal -->
   <div class="main-content" id="main-content">
-    <h1>Gestión de Categorias</h1>
+    <h1>Gestión de Categorías</h1>
     <!-- Botón para descargar CSV -->
     <div class="mb-3">
       <a href="{% url 'download_categories' %}" class="btn btn-info">Descargar CSV</a>
     </div>
     
-    <h3>Tabla de Categorias</h3>
+    <h3>Tabla de Categorías</h3>
     <table class="table table-striped">
       <thead>
         <tr>
-          <th>ID de la Categoria</th>
-          <th>Nombre de la Categoria</th>
+          <th>ID de la Categoría</th>
+          <th>Nombre de la Categoría</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody id="categories-table-body">
         {% for category in Categories %}
-        <tr data-brand-id="{{ category.category_id }}">
+        <tr data-category-id="{{ category.category_id }}">
           <td class="category_id">{{ category.category_id }}</td>
           <td class="category_name">{{ category.category_name }}</td>
           <td>
-            <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-brand-id="{{ category.category_id }}">Editar</button>
-            <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-brand-id="{{ category.category_id }}" style="display:none;">Guardar</button>
-            <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-brand-id="{{ category.category_id }}" style="display:none;">Cancelar</button>
+            <button type="button" class="btn btn-warning btn-sm btn-same-size edit-btn" data-category-id="{{ category.category_id }}">Editar</button>
+            <button type="button" class="btn btn-success btn-sm btn-same-size save-btn" data-category-id="{{ category.category_id }}" style="display:none;">Guardar</button>
+            <button type="button" class="btn btn-secondary btn-sm btn-same-size cancel-btn" data-category-id="{{ category.category_id }}" style="display:none;">Cancelar</button>
             <a href="?delete={{ category.category_id }}" class="btn btn-danger btn-sm btn-same-size">Eliminar</a>
           </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="3">No hay órdenes disponibles.</td>
+          <td colspan="3">No hay categorías disponibles.</td>
         </tr>
         {% endfor %}
-        <!-- Fila para agregar nueva marca -->
-        <tr id="new-categories-row">
-          <td><input type="text" class="form-control form-control-sm new-categories-input" placeholder="ID de la Categoria"></td>
-          <td><input type="text" class="form-control form-control-sm new-categories-input" placeholder="Nombre de la Categoria"></td>
+        <!-- Fila para agregar nueva categoría -->
+        <tr id="new-category-row">
+          <td><input type="text" class="form-control form-control-sm new-category-input" placeholder="ID de la Categoría"></td>
+          <td><input type="text" class="form-control form-control-sm new-category-input" placeholder="Nombre de la Categoría"></td>
           <td><button type="button" class="btn btn-success btn-sm btn-same-size" id="new-save-btn">Guardar</button></td>
         </tr>
       </tbody>
     </table>
     
     <!-- Gráfico resumen -->
-    <h2>Resumen de Categorias por Estado</h2>
+    <h2>Resumen de Categorías</h2>
     <canvas id="orderChart" width="400" height="200"></canvas>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Funciones para edición inline de filas existentes
-      function editRowHandler() {
-        const categoriesId = this.getAttribute('data-categories-id');
-        const row = document.querySelector(`tr[data-categories-id="${categoriesId}"]`);
-        // Se asume que sólo las dos primeras celdas son editables (ID y Nombre)
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 2) {
-            const text = cell.textContent.trim();
-            cell.setAttribute('data-original', text);
-            cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
+    // Función para obtener el token CSRF desde la cookie
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
           }
-        });
-        row.querySelector('.edit-btn').style.display = 'none';
-        row.querySelector('.save-btn').style.display = 'inline-block';
-        row.querySelector('.cancel-btn').style.display = 'inline-block';
-        row.classList.add('editing');
       }
+      return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
 
-      function cancelEditHandler() {
-        const categoriesId = this.getAttribute('data-categories-id');
-        const row = document.querySelector(`tr[data-categories-id="${categoriesId}"]`);
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 2) {
-            const original = cell.getAttribute('data-original');
-            cell.innerHTML = original;
-          }
-        });
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
-      }
+    // Definición de URLs para las peticiones AJAX
+    const updateCategoryUrl = "{% url 'categories_list' %}";
+    const createCategoryUrl = "{% url 'create_categories' %}";
 
-      function saveEditHandler() {
-        const categoriesId = this.getAttribute('data-categories-id');
-        const row = document.querySelector(`tr[data-categories-id="${categoriesId}"]`);
-        const newData = [];
-        row.querySelectorAll('td').forEach((cell, index) => {
-          if (index < 2) {
-            const input = cell.querySelector('input');
-            newData.push(input.value);
-            cell.innerHTML = input.value;
-          }
-        });
-        console.log('Guardando datos para la marca', categoriesId, newData);
-        // Aquí puedes realizar una petición AJAX para actualizar los datos en el servidor
-        row.querySelector('.edit-btn').style.display = 'inline-block';
-        row.querySelector('.save-btn').style.display = 'none';
-        row.querySelector('.cancel-btn').style.display = 'none';
-        row.classList.remove('editing');
-      }
-
-      // Adjuntar eventos a los botones de edición existentes
-      document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', editRowHandler);
-      });
-      document.querySelectorAll('.cancel-btn').forEach(button => {
-        button.addEventListener('click', cancelEditHandler);
-      });
-      document.querySelectorAll('.save-btn').forEach(button => {
-        button.addEventListener('click', saveEditHandler);
-      });
-
-      // Función para agregar una nueva marca
-      document.getElementById('new-save-btn').addEventListener('click', function() {
-        const newBrandRow = document.getElementById('new-categories-row');
-        const inputs = newBrandRow.querySelectorAll('.new-categories-input');
-        const values = [];
-        inputs.forEach(function(input) {
-          values.push(input.value.trim());
-        });
-        // Validación: se asume que el ID de la Marca es obligatorio
-        if (values[0] === "") {
-          alert("El ID de la Categoria es requerido.");
-          return;
+    // Función para activar la edición en línea
+    function editRowHandler() {
+      const categoryId = this.getAttribute('data-category-id');
+      const row = document.querySelector(`tr[data-category-id="${categoryId}"]`);
+      row.querySelectorAll('td').forEach((cell, index) => {
+        if (index < 2) {
+          const text = cell.textContent.trim();
+          cell.setAttribute('data-original', text);
+          cell.innerHTML = `<input type="text" class="form-control form-control-sm" value="${text}">`;
         }
-        // Crear una nueva fila con los datos ingresados
-        const tbody = document.getElementById('categories-table-body');
-        // Definir la fila de nueva marca para insertar antes (la fila con id "new-brand-row")
-        const newOrderRow = document.getElementById('new-categories-row');
-        const newRow = document.createElement('tr');
-        newRow.setAttribute('data-categories-id', values[0]);
-        // Agregar las dos celdas: ID y Nombre
-        values.slice(0,2).forEach(value => {
-          const td = document.createElement('td');
-          td.textContent = value;
-          newRow.appendChild(td);
-        });
-        // Columna de acciones
-        const actionsTd = document.createElement('td');
-
-        // Botón Editar
-        const editBtn = document.createElement('button');
-        editBtn.textContent = 'Editar';
-        editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
-        editBtn.setAttribute('data-categories-id', values[0]);
-        editBtn.addEventListener('click', editRowHandler);
-        actionsTd.appendChild(editBtn);
-
-        // Botón Guardar
-        const saveBtn = document.createElement('button');
-        saveBtn.textContent = 'Guardar';
-        saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
-        saveBtn.setAttribute('data-categories-id', values[0]);
-        saveBtn.style.display = 'none';
-        saveBtn.addEventListener('click', saveEditHandler);
-        actionsTd.appendChild(saveBtn);
-
-        // Botón Cancelar
-        const cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Cancelar';
-        cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
-        cancelBtn.setAttribute('data-categories-id', values[0]);
-        cancelBtn.style.display = 'none';
-        cancelBtn.addEventListener('click', cancelEditHandler);
-        actionsTd.appendChild(cancelBtn);
-
-        // Enlace para Eliminar
-        const deleteLink = document.createElement('a');
-        deleteLink.href = '?delete=' + values[0];
-        deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
-        deleteLink.textContent = 'Eliminar';
-        actionsTd.appendChild(deleteLink);
-
-        newRow.appendChild(actionsTd);
-        // Insertar la nueva fila antes de la fila para agregar nuevas marcas
-        tbody.insertBefore(newRow, newOrderRow);
-        
-        // Limpiar los inputs de la fila para agregar nuevos datos
-        inputs.forEach(function(input) {
-          input.value = '';
-        });
-        console.log("Nueva marca agregada:", values);
       });
+      row.querySelector('.edit-btn').style.display = 'none';
+      row.querySelector('.save-btn').style.display = 'inline-block';
+      row.querySelector('.cancel-btn').style.display = 'inline-block';
+      row.classList.add('editing');
+    }
 
-      // Función para alternar la visibilidad del sidebar
-      document.getElementById('toggle-sidebar').addEventListener('click', function() {
-        const sidebar = document.getElementById('sidebar');
-        const mainContent = document.getElementById('main-content');
-        if (sidebar.classList.contains('hidden')) {
-          sidebar.classList.remove('hidden');
-          mainContent.classList.remove('full-width');
-          this.textContent = 'Ocultar';
-          this.classList.remove('hidden');
+    // Función para cancelar la edición y restaurar los valores originales
+    function cancelEditHandler() {
+      const categoryId = this.getAttribute('data-category-id');
+      const row = document.querySelector(`tr[data-category-id="${categoryId}"]`);
+      row.querySelectorAll('td').forEach((cell, index) => {
+        if (index < 2) {
+          const original = cell.getAttribute('data-original');
+          cell.innerHTML = original;
+        }
+      });
+      row.querySelector('.edit-btn').style.display = 'inline-block';
+      row.querySelector('.save-btn').style.display = 'none';
+      row.querySelector('.cancel-btn').style.display = 'none';
+      row.classList.remove('editing');
+    }
+
+    // Función para guardar la edición mediante AJAX
+    function saveEditHandler() {
+      const categoryId = this.getAttribute('data-category-id');
+      const row = document.querySelector(`tr[data-category-id="${categoryId}"]`);
+      const inputs = row.querySelectorAll('input');
+      const updatedCategoryId = inputs[0].value.trim();
+      const updatedCategoryName = inputs[1].value.trim();
+      const formData = new FormData();
+      formData.append('category_id', updatedCategoryId);
+      formData.append('category_name', updatedCategoryName);
+      
+      fetch(updateCategoryUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          row.querySelector('.category_id').innerHTML = updatedCategoryId;
+          row.querySelector('.category_name').innerHTML = updatedCategoryName;
+          row.querySelector('.edit-btn').style.display = 'inline-block';
+          row.querySelector('.save-btn').style.display = 'none';
+          row.querySelector('.cancel-btn').style.display = 'none';
+          row.classList.remove('editing');
+          console.log("Categoría actualizada correctamente.");
         } else {
-          sidebar.classList.add('hidden');
-          mainContent.classList.add('full-width');
-          this.textContent = 'Mostrar';
-          this.classList.add('hidden');
+          alert("Error al actualizar la categoría: " + JSON.stringify(data.errors));
         }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Error de conexión al actualizar la categoría.");
       });
+    }
+
+    // Función para crear una nueva categoría mediante AJAX
+    document.getElementById('new-save-btn').addEventListener('click', function() {
+      const newCategoryRow = document.getElementById('new-category-row');
+      const inputs = newCategoryRow.querySelectorAll('.new-category-input');
+      const newCategoryId = inputs[0].value.trim();
+      const newCategoryName = inputs[1].value.trim();
+      if (newCategoryId === "") {
+        alert("El ID de la Categoría es requerido.");
+        return;
+      }
+      const formData = new FormData();
+      formData.append('category_id', newCategoryId);
+      formData.append('category_name', newCategoryName);
+      
+      fetch(createCategoryUrl, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          const tbody = document.getElementById('categories-table-body');
+          const newRow = document.createElement('tr');
+          newRow.setAttribute('data-category-id', newCategoryId);
+          
+          const cell1 = document.createElement('td');
+          cell1.className = 'category_id';
+          cell1.textContent = newCategoryId;
+          const cell2 = document.createElement('td');
+          cell2.className = 'category_name';
+          cell2.textContent = newCategoryName;
+          newRow.appendChild(cell1);
+          newRow.appendChild(cell2);
+          
+          const cellActions = document.createElement('td');
+
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Editar';
+          editBtn.className = 'btn btn-warning btn-sm btn-same-size edit-btn';
+          editBtn.setAttribute('data-category-id', newCategoryId);
+          editBtn.addEventListener('click', editRowHandler);
+          cellActions.appendChild(editBtn);
+
+          const saveBtn = document.createElement('button');
+          saveBtn.textContent = 'Guardar';
+          saveBtn.className = 'btn btn-success btn-sm btn-same-size save-btn';
+          saveBtn.setAttribute('data-category-id', newCategoryId);
+          saveBtn.style.display = 'none';
+          saveBtn.addEventListener('click', saveEditHandler);
+          cellActions.appendChild(saveBtn);
+
+          const cancelBtn = document.createElement('button');
+          cancelBtn.textContent = 'Cancelar';
+          cancelBtn.className = 'btn btn-secondary btn-sm btn-same-size cancel-btn';
+          cancelBtn.setAttribute('data-category-id', newCategoryId);
+          cancelBtn.style.display = 'none';
+          cancelBtn.addEventListener('click', cancelEditHandler);
+          cellActions.appendChild(cancelBtn);
+
+          const deleteLink = document.createElement('a');
+          deleteLink.href = '?delete=' + newCategoryId;
+          deleteLink.className = 'btn btn-danger btn-sm btn-same-size';
+          deleteLink.textContent = 'Eliminar';
+          cellActions.appendChild(deleteLink);
+
+          newRow.appendChild(cellActions);
+          tbody.insertBefore(newRow, newCategoryRow);
+          inputs.forEach(function(input) { input.value = ''; });
+          console.log("Nueva categoría creada:", newCategoryId, newCategoryName);
+        } else {
+          alert("Error al crear la categoría: " + JSON.stringify(data.errors));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert("Error de conexión al crear la categoría.");
+      });
+    });
+
+    // Asignar eventos a los botones existentes
+    document.querySelectorAll('.edit-btn').forEach(button => {
+      button.addEventListener('click', editRowHandler);
+    });
+    document.querySelectorAll('.cancel-btn').forEach(button => {
+      button.addEventListener('click', cancelEditHandler);
+    });
+    document.querySelectorAll('.save-btn').forEach(button => {
+      button.addEventListener('click', saveEditHandler);
+    });
+
+    // Función para alternar la visibilidad del sidebar
+    document.getElementById('toggle-sidebar').addEventListener('click', function() {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('main-content');
+      if (sidebar.classList.contains('hidden')) {
+        sidebar.classList.remove('hidden');
+        mainContent.classList.remove('full-width');
+        this.textContent = 'Ocultar';
+        this.classList.remove('hidden');
+      } else {
+        sidebar.classList.add('hidden');
+        mainContent.classList.add('full-width');
+        this.textContent = 'Mostrar';
+        this.classList.add('hidden');
+      }
     });
   </script>
 </body>
 </html>
 {% endblock %}
+
